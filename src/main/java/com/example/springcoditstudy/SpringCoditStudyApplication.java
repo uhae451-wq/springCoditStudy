@@ -1,6 +1,8 @@
 package com.example.springcoditstudy;
 
 import com.example.springcoditstudy.d0831.PokemonService;
+import com.example.springcoditstudy.d0831.bean.BattlePokemon;
+import com.example.springcoditstudy.d0831.bean.GymLeaderService;
 import com.example.springcoditstudy.d0831.yamlEx.DataSourceInfoPrinter;
 import com.example.springcoditstudy.d0831.yamlEx.ValueYaml;
 import org.springframework.boot.SpringApplication;
@@ -22,6 +24,12 @@ public class SpringCoditStudyApplication {
         System.out.println(valueYaml.getGreeting());
         DataSourceInfoPrinter printer = context.getBean(DataSourceInfoPrinter.class);
         printer.print();
+
+        String[] names = context.getBeanNamesForType(BattlePokemon.class);
+        System.out.println(names.length);
+
+        GymLeaderService gymLeaderService = context.getBean(GymLeaderService.class);
+        gymLeaderService.openGymBattle();
         // d0831 E
     }
 
