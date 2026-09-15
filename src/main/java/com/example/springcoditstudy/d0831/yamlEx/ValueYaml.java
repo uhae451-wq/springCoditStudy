@@ -1,4 +1,4 @@
-package com.example.springcoditstudy.d0831;
+package com.example.springcoditstudy.d0831.yamlEx;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

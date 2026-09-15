@@ -1,3 +1,10 @@
+## EditConfigurations > Active Profiles에 수정으로 사용할 yaml파일 지정 가능 ( ex. dev / prod )
 spring:
   application:
     name: springCoditStudy
+
+server:
+  port: 8080
+
+my:
+  greeting: "Hello, Spring!"

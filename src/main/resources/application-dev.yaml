@@ -1,3 +1,7 @@
-spring:
-  application:
-    name: springCoditStudy
+# application-dev.yaml (개발 환경)
+server:
+  port: 8081
+
+logging:
+  level:
+    root: DEBUG
