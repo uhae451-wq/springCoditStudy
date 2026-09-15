@@ -8,6 +8,7 @@
 | --- | --- |
 | [Spring Bean과 YAML 설정](#spring-bean-yaml) | `d0831` |
 | [Spring MVC 요청 처리·첨부파일·예외 처리](#spring-mvc) | `d0909` |
+| [요청 검증·DTO 분리·공통 API 응답](#api-response) | `d0915` |
 
 ---
 
@@ -75,3 +76,40 @@
 - **요청과 응답:** 파라미터·JSON·헤더·쿠키를 읽고, 트레이너 등록·조회를 통해 요청이 Controller → Service → Repository로 전달되어 화면에 결과를 보여주는 흐름을 익힌다.
 - **첨부파일 처리:** 클라이언트가 보낸 파일을 받아 저장하고, 다운로드·삭제하는 흐름을 익힌다.
 - **예외 처리:** 요청 처리 중 발생한 예외를 오류 화면으로 연결하고, 컨트롤러별 처리와 공통 처리의 적용 범위·우선순위를 익힌다.
+
+---
+
+<a id="api-response"></a>
+
+## 요청 검증·DTO 분리·공통 API 응답
+
+**실습 패키지:** `d0915`
+
+### 핵심 개념
+
+| 개념 | 요약 |
+| --- | --- |
+| JSON 응답 | `@RestController`에서 반환한 객체를 응답 본문으로 전달 |
+| DTO 분리 | 요청 DTO로 입력을 받고, 도메인 객체에서 응답에 필요한 값만 응답 DTO로 변환 |
+| 요청 검증 | DTO에 `@NotBlank`, `@Email`, `@Min`, `@Max`, `@Positive` 조건을 선언하고 `@Valid`로 검증 실행 |
+| 공통 응답 형식 | `ApiResponse<T>`의 `success`, `data`, `error`, `timestamp`로 성공·실패 응답 구조를 통일 |
+| HTTP 상태 코드 | `ResponseEntity`로 응답 본문과 함께 `200`, `201`, `400`, `404` 등 상태 코드를 지정 |
+| JSON 예외 처리 | `@RestControllerAdvice`와 `@ExceptionHandler`로 예외를 받아 오류 코드·메시지를 담은 응답으로 변환 |
+
+### 실습 내용
+
+| 코드·설정 | 실습 내용 |
+| --- | --- |
+| `CreateCoffeeRequest`, `Coffee`, `CoffeeResponse` | 요청 → 도메인 → 응답 DTO 변환. `CoffeeResponse.from()`으로 `id`, `name`, `price`만 반환 |
+| `CoffeeController` | `/coffee`는 DTO 반환, `/coffee1`은 `@Valid` 검증 추가, `/coffee2`는 공통 응답 형식과 `201 Created` 적용 |
+| `RequestDTO`, `Test`, `ResponseDTO` | 이름·이메일·나이 검증 조건을 선언하고 요청·도메인·응답 객체를 분리 |
+| `TestController` | `/test1`은 요청 검증, `/test2`는 DTO 목록 반환, `/test3`은 공통 성공 응답, `/test4`는 사용자 정의 예외 발생 |
+| `ApiResponse`, `ApiError` | `success()`는 데이터를, `fail()`은 오류 코드·메시지를 담아 공통 응답 생성 |
+| `CoffeeGlobalExceptionHandler` | 입력 검증 실패 시 필드별 오류 메시지를 모아 `400`과 `INVALID_INPUT` 반환 |
+| `DefaultGlobalExceptionHandler` | `CustomException`을 공통 실패 응답으로 변환하고 `404` 반환 |
+
+### 정리
+
+- **DTO 분리:** 입력받을 값과 응답으로 보여줄 값을 구분하고, 요청 → 도메인 → 응답으로 변환하는 흐름을 익힌다.
+- **요청 검증:** 잘못된 입력을 검증하고, 어떤 항목이 잘못됐는지 클라이언트에 전달하는 방법을 익힌다.
+- **공통 API 응답:** 성공 데이터와 오류를 일정한 JSON 구조로 반환하고, 처리 결과에 맞는 HTTP 상태 코드를 함께 전달하는 방법을 익힌다.
