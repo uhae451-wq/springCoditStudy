@@ -10,6 +10,7 @@
 | [Spring Bean과 YAML 설정](#spring-bean-yaml) | `d0831` |
 | [Spring MVC 요청 처리·첨부파일·예외 처리](#spring-mvc) | `d0909` |
 | [요청 검증·DTO 분리·공통 API 응답](#api-response) | `d0915` |
+| [트레이너·예약 API 통합 실습](#trainer-reservation) | `d0916` |
 
 ---
 
@@ -140,7 +141,7 @@
 | `CreateCoffeeRequest`, `Coffee`, `CoffeeResponse` | 요청 → 도메인 → 응답 DTO 변환. `CoffeeResponse.from()`으로 `id`, `name`, `price`만 반환 |
 | `CoffeeController` | `/coffee`는 DTO 반환, `/coffee1`은 `@Valid` 검증 추가, `/coffee2`는 공통 응답 형식과 `201 Created` 적용 |
 | `RequestDTO`, `Test`, `ResponseDTO` | 이름·이메일·나이 검증 조건을 선언하고 요청·도메인·응답 객체를 분리 |
-| `TestController` | `/test1`은 요청 검증, `/test2`는 DTO 목록 반환, `/test3`은 공통 성공 응답, `/test4`는 사용자 정의 예외 발생 |
+| `Test0916Controller` | `/test1`은 요청 검증, `/test2`는 DTO 목록 반환, `/test3`은 공통 성공 응답, `/test4`는 사용자 정의 예외 발생 |
 | `ApiResponse`, `ApiError` | `success()`는 데이터를, `fail()`은 오류 코드·메시지를 담아 공통 응답 생성 |
 | `CoffeeGlobalExceptionHandler` | 입력 검증 실패 시 필드별 오류 메시지를 모아 `400`과 `INVALID_INPUT` 반환 |
 | `DefaultGlobalExceptionHandler` | `CustomException`을 공통 실패 응답으로 변환하고 `404` 반환 |
@@ -150,3 +151,40 @@
 - **DTO 분리:** 입력받을 값과 응답으로 보여줄 값을 구분하고, 요청 → 도메인 → 응답으로 변환하는 흐름을 익힌다.
 - **요청 검증:** 잘못된 입력을 검증하고, 어떤 항목이 잘못됐는지 클라이언트에 전달하는 방법을 익힌다.
 - **공통 API 응답:** 성공 데이터와 오류를 일정한 JSON 구조로 반환하고, 처리 결과에 맞는 HTTP 상태 코드를 함께 전달하는 방법을 익힌다.
+
+---
+
+<a id="trainer-reservation"></a>
+
+## 트레이너·예약 API 통합 실습
+
+**실습 패키지:** `d0916`
+
+### 핵심 개념
+
+| 개념 | 요약 |
+| --- | --- |
+| 계층별 요청 처리 | Controller에서 요청·응답을 처리하고, Service에서 업무 조건을 확인하며, Repository에서 데이터를 저장·조회 |
+| 폼과 파일 수신 | `multipart/form-data` 요청에서 `@ModelAttribute`로 트레이너 정보를, `MultipartFile`로 선택적 프로필 이미지를 받음 |
+| 조건별 조회 | 선택적 쿼리 파라미터로 트레이너 전문 분야나 예약의 트레이너 ID를 지정해 목록 필터링 |
+| 예약 입력 검증 | `@Valid`와 `@NotNull`, `@NotBlank`, `@Future`로 필수 입력과 미래 예약 시간 검증 |
+| 업무 예외와 응답 | 트레이너·예약 없음, 예약 충돌 등의 예외를 공통 오류 응답과 HTTP 상태 코드로 변환 |
+| API 문서 정보 | Swagger/OpenAPI의 `@Tag`, `@Schema`로 API 설명과 요청 필드 예시 작성 |
+
+### 실습 내용
+
+| 코드·설정 | 실습 내용 |
+| --- | --- |
+| `TrainerController2` | `/v2/trainers`에서 트레이너·이미지 등록, 전문 분야별 목록 조회, 프로필 이미지 응답 |
+| `TrainerService2`, `TrainerRepository2` | 트레이너를 메모리에 저장하고, ID 조회 시 존재 여부 확인 및 전문 분야 필터링 |
+| `ReservationController` | `/v2/reservations`에서 예약 생성·단건 및 목록 조회·시간 변경·삭제. 생성은 `201`, 삭제는 `204` 응답 |
+| `ReservationService` | 예약 생성 전 트레이너 존재 확인, 생성·변경 시 충돌 검사 호출, 조회·변경·삭제 시 예약 존재 확인 |
+| `ReservationRepository` | 예약을 메모리에 저장하고 조회·시간 변경·삭제 및 충돌 검사 메서드 구성 |
+| 요청·응답 DTO | 생성·시간 변경 입력을 구분하고, 트레이너 및 예약 조회 결과를 응답 객체로 변환 |
+| `GlobalExceptionHandler`, `ApiResponse`, `ApiError` | 입력 오류 `400`, 대상 없음 `404`, 예약 충돌 `409`, 예상하지 못한 오류 `500`의 공통 응답 구성 |
+
+### 정리
+
+- **기능 통합:** 요청 검증·파일 업로드·DTO·공통 응답을 트레이너와 예약 API에 함께 적용하는 흐름을 익힌다.
+- **예약 처리:** 트레이너와 예약을 연결하고, 등록·조회·시간 변경·삭제 과정에서 필요한 업무 조건을 확인하는 방법을 익힌다.
+- **결과 전달:** 정상 처리와 업무 예외를 구분해 클라이언트에 응답하고, API 설명과 입력 예시를 문서화하는 방법을 익힌다.
