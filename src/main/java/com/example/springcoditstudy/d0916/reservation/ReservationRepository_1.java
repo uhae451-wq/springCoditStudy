@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
-public class ReservationRepository {
+public class ReservationRepository_1 {
     private final Map<Long, Reservation> store = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(1);
 

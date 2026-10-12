@@ -2,9 +2,33 @@
 spring:
   application:
     name: springCoditStudy
+  datasource:
+    url: jdbc:postgresql://localhost:5432/springcodeitstudy
+    username : chichi
+    password : vmflwma1!
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      ## create : 기존 테이블 모두 drop후 재생성
+      ## create-drop : create 후 앱 종료시 drop
+      ## update : 바뀐 부분만 alter (삭제는 안함)
+      ## validate : 엔티티와 테이블이 맞는지 확인함
+      ## none : 아무것도 안함
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: trace
+    org.springframework.transaction.interceptor: TRACE
+    org.springframework.orm.jpa.JpaTransactionManager: DEBUG
 
 server:
   port: 8080
 
 my:
   greeting: "Hello, Spring!"
+
