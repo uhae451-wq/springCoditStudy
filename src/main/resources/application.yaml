@@ -26,6 +26,12 @@ logging:
     org.springframework.transaction.interceptor: DEBUG
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
     org.hibernate.SQL: DEBUG
+    ## 해당 프로젝트는 기본적으로 info까지 출력이 된다.
+    root: info
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{20}:%msg%n"
+  file:
+    name: logs/app.log
 
 server:
   port: 8080
@@ -33,3 +39,14 @@ server:
 my:
   greeting: "Hello, Spring!"
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics     # 이 세 개만 엽니다
+  endpoint:
+    health:
+      show-details: always                 # 항목별 결과까지 보여줍니다
+  info:
+    env:
+      enabled: true                        # 아래 info 값을 노출합니다
