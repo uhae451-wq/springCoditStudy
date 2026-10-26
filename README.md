@@ -19,6 +19,9 @@
 | [트랜잭션 전파·N+1 문제 해결](#transaction-fetch) | `d1001` |
 | [게시글·댓글 연관관계·페이징](#jpa-board) | `d1002` |
 | [도서 주문 API 통합 실습](#book-order) | `d1006` |
+| [N+1 문제 재현과 해결](#n-plus-one) | `d1012` |
+| [커스텀 검증·에러 코드·공통 예외 응답](#error-code) | `d1026` |
+| [로깅 설정·Actuator 헬스 체크](#logging-actuator) | `d1026`, `logback-spring.xml` |
 
 ---
 
@@ -452,3 +455,106 @@
 - **업무 규칙 캡슐화:** 재고 차감·취소 복구 같은 규칙을 엔티티 메서드에 두고 서비스는 흐름만 조합한다.
 - **트랜잭션 일관성:** 주문·재고·결제를 한 트랜잭션으로 묶어 중간에 실패하면 모두 롤백되도록 한다.
 - **API 완성:** JPA 연관관계, DTO, 페이징, 공통 예외 처리를 합쳐 REST API로 제공한다.
+
+---
+
+<a id="n-plus-one"></a>
+
+## N+1 문제 재현과 해결
+
+**실습 패키지:** `d1012`
+
+### 핵심 개념
+
+| 개념 | 요약 |
+| --- | --- |
+| N+1 문제 | 목록을 1번 조회한 뒤 연관 컬렉션에 접근할 때마다 쿼리가 N번 더 실행되는 문제 |
+| 기본 로딩 전략 | `@OneToMany`는 기본이 `LAZY`, `@ManyToOne`은 기본이 `EAGER`라서 `LAZY`를 직접 명시 |
+| fetch join | `join fetch` JPQL로 팀과 멤버를 한 번의 쿼리로 조회하고 `distinct`로 중복 제거 |
+| `@EntityGraph` | 어노테이션만으로 fetch join과 같은 효과를 내며 `LEFT OUTER JOIN`으로 조회 |
+| 배치 사이즈 | `setFetchBatchSize`로 연관 컬렉션을 `IN` 조건으로 묶어 조회해 쿼리 수를 줄임 |
+| 쿼리 횟수 측정 | Hibernate `Statistics`로 실행된 SQL 수를 세어 `assertThat`으로 검증 |
+
+### 실습 내용
+
+| 코드 | 실습 내용 |
+| --- | --- |
+| `TeamD1012`, `MemberD1012` | 팀 1 : 멤버 N 관계 엔티티. 멤버가 외래 키를 가진 연관관계 주인 |
+| `TeamRepositoryD1012` | fetch join 쿼리와 `@EntityGraph` 쿼리 정의 |
+| `NPlusOneTest` | 팀 5개 × 멤버 3명을 저장하고 `flush()`·`clear()`로 캐시를 비운 뒤 쿼리 수 비교 |
+| 테스트별 쿼리 수 | `findAll()`만 호출하면 1번, 멤버 접근 시 1+N번(6번), fetch join·`@EntityGraph`는 1번, 배치 사이즈는 2번 |
+| `jpa-n-plus-1.md` | 재현 과정과 해결책별 실제 SQL, 한계를 글로 정리 |
+
+### 정리
+
+- **원인 확인:** 지연 로딩된 컬렉션을 반복문에서 사용하면 건마다 쿼리가 나가므로 쿼리 횟수를 숫자로 확인한다.
+- **해결 선택:** 항상 함께 쓰는 연관 데이터는 fetch join이나 `@EntityGraph`로, 넓게 줄이고 싶을 때는 배치 사이즈를 사용한다.
+
+---
+
+<a id="error-code"></a>
+
+## 커스텀 검증·에러 코드·공통 예외 응답
+
+**실습 패키지:** `d1026`
+
+### 핵심 개념
+
+| 개념 | 요약 |
+| --- | --- |
+| Bean Validation | `@Valid`와 `@NotNull`, `@NotEmpty`, `@Min`, `@NotBlank`로 요청 값을 검증 |
+| 커스텀 검증 어노테이션 | `@Constraint`, `@Target`, `@Retention`으로 `@BannedWord`, `@Phone`을 만들고 `ConstraintValidator`로 검증 로직 구현 |
+| 에러 코드 enum | `ErrorCode`에 코드·메시지·HTTP 상태를 함께 정의해 예외 응답을 일관되게 구성 |
+| 예외 계층 | 추상 `BaseException`이 `ErrorCode`를 가지고, 회원·상품·재고·이메일 중복 예외가 상속 |
+| 공통 예외 처리 | `@RestControllerAdvice`에서 업무 예외, 검증 실패, 예상하지 못한 예외를 구분해 응답 |
+
+### 실습 내용
+
+| 코드 | 실습 내용 |
+| --- | --- |
+| `Member1026Controller`, `Member1026Service` | `/api/members`에서 회원 가입(`201`)과 조회. 이메일 중복 시 `409` |
+| `Product1026Controller`, `Product1026Service` | `/api/products`에서 상품을 메모리에 저장 |
+| `Order1026Controller`, `Order1026Service` | `/api/orders`에서 회원·상품 확인, 재고 차감, 총 주문 금액 계산 |
+| `BannedWordValidator`, `PhoneValidator` | 금지어 포함 여부와 `010-0000-0000` 형식을 정규식으로 검사. null은 통과 |
+| `ErrorResponse` | 에러 코드·메시지와 필드별 오류 목록을 담는 공통 응답 |
+| `ApiExceptionHandler1026` | 업무 예외는 `ErrorCode`의 상태로, 검증 실패는 `400`, 그 외는 `500`으로 응답하고 로그 기록 |
+| 메모리 Repository | `ConcurrentHashMap`과 `AtomicLong`으로 저장소와 ID 생성 |
+
+### 정리
+
+- **검증 확장:** 기본 검증으로 부족한 규칙은 커스텀 어노테이션과 `ConstraintValidator`로 직접 만든다.
+- **오류 응답 통일:** 에러 코드와 예외 계층을 두어 어떤 예외든 같은 형식으로 클라이언트에 전달한다.
+
+---
+
+<a id="logging-actuator"></a>
+
+## 로깅 설정·Actuator 헬스 체크
+
+**실습 파일:** `application.yaml`, `logback-spring.xml`, `d1026`
+
+### 핵심 개념
+
+| 개념 | 요약 |
+| --- | --- |
+| 로그 레벨 | `root: info`를 기본으로 두고 패키지별로 `DEBUG`·`TRACE`를 조절. 서비스에서는 `@Slf4j`의 `log.info`·`warn`·`error` 사용 |
+| 로그 출력 설정 | `logging.pattern.console`과 `logging.file.name`으로 콘솔 패턴과 `logs/app.log` 파일 지정 |
+| Logback 설정 | `logback-spring.xml`에서 콘솔·파일 appender를 정의하고 `springProfile`로 환경별 출력 분리 |
+| 롤링 정책 | 날짜별로 파일을 나누고 50MB 초과 시 분할, 30일 보관, 전체 3GB 제한 |
+| Actuator | `health`, `info`, `metrics`만 노출하고 `show-details: always`로 항목별 상태 표시 |
+| 커스텀 헬스 인디케이터 | `HealthIndicator`를 구현해 서비스에 맞는 상태 정보를 `/actuator/health`에 추가 |
+
+### 실습 내용
+
+| 코드·설정 | 실습 내용 |
+| --- | --- |
+| `application.yaml` | 로그 레벨·패턴·파일 경로와 `management` 노출 범위 설정 |
+| `logback-spring.xml` | `local` 프로필은 콘솔만, `prod` 프로필은 콘솔과 롤링 파일에 기록 |
+| `MemberHealthIndicator` | 회원 저장소의 회원 수를 상태 정보로 노출하고, 접근 실패 시 `DOWN`과 사유 반환 |
+| `build.gradle` | `spring-boot-starter-actuator` 의존성 추가 |
+| 서비스 로그 | 주문 요청·재고 확인·주문 완료 단계에 로그를 남기고, 예외 핸들러에서 스택트레이스까지 기록 |
+
+### 정리
+
+- **로그 관리:** 환경에 따라 출력 위치와 레벨을 나누고, 파일은 날짜·크기 기준으로 보관한다.
+- **상태 모니터링:** Actuator로 애플리케이션과 저장소 상태를 확인하고 노출할 엔드포인트를 제한한다.
