@@ -18,11 +18,6 @@ public class ReservationConfirmService {
   private final NofityService nofityService;
 
 
-
-
-
-
-
   // 결제를 기록
   // 예약상태 남기기
   // 알람 기록을 남기기
