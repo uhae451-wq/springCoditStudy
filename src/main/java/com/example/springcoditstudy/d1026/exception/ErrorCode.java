@@ -18,7 +18,8 @@ public enum ErrorCode {
 
   // 공통
   INVALID_INPUT("CMN_001", "입력값이 올바르지 않습니다", HttpStatus.BAD_REQUEST),
-  INTERNAL_ERROR("CMN_999", "서버에 문제가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
+  INTERNAL_ERROR("CMN_999", "서버에 문제가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+  INVALID_QUANTITY("PRD-003", "수량은 1 이상이어야 합니다.", HttpStatus.BAD_REQUEST)    // ← 추가
   ;
 
   private final String code;

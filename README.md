@@ -22,6 +22,9 @@
 | [N+1 문제 재현과 해결](#n-plus-one) | `d1012` |
 | [커스텀 검증·에러 코드·공통 예외 응답](#error-code) | `d1026` |
 | [로깅 설정·Actuator 헬스 체크](#logging-actuator) | `d1026`, `logback-spring.xml` |
+| [JUnit·Mockito·JPA Repository 테스트](#test-basics) | `test/d1027` → `main/d1026` |
+| [도서 주문 도메인·예외 처리·요청 추적](#book-order-testing) | `main/d1027` |
+| [도메인·Repository·Service·Controller 테스트](#layer-tests) | `test/d1028` → `main/d1027` |
 
 ---
 
@@ -46,7 +49,7 @@
 
 | 코드·설정 | 실습 내용 |
 | --- | --- |
-| `MemberD1006` | ID·이름·이메일을 가진 직렬화 대상 객체. `changeName()`으로 이름 변경 |
+| `Member` | ID·이름·이메일을 가진 직렬화 대상 객체. `changeName()`으로 이름 변경 |
 | `FileMemberRepository` 생성자 | `fileio-practice/member` 저장 폴더 준비 |
 | `save()`, `findById()` | 회원을 `UUID.ser` 파일로 저장하고 ID로 조회·복원. 같은 ID로 저장하면 기존 파일을 덮어씀 |
 | `findAll()`, `findByEmail()` | 저장된 회원 파일을 읽어 전체 목록을 만들고, 이메일이 일치하는 회원 조회 |
@@ -152,7 +155,7 @@
 | `CreateCoffeeRequest`, `Coffee`, `CoffeeResponse` | 요청 → 도메인 → 응답 DTO 변환. `CoffeeResponse.from()`으로 `id`, `name`, `price`만 반환 |
 | `CoffeeController` | `/coffee`는 DTO 반환, `/coffee1`은 `@Valid` 검증 추가, `/coffee2`는 공통 응답 형식과 `201 Created` 적용 |
 | `RequestDTO`, `Test`, `ResponseDTO` | 이름·이메일·나이 검증 조건을 선언하고 요청·도메인·응답 객체를 분리 |
-| `Test0916Controller` | `/test1`은 요청 검증, `/test2`는 DTO 목록 반환, `/test3`은 공통 성공 응답, `/test4`는 사용자 정의 예외 발생 |
+| `TestController` | `/test1`은 요청 검증, `/test2`는 DTO 목록 반환, `/test3`은 공통 성공 응답, `/test4`는 사용자 정의 예외 발생 |
 | `ApiResponse`, `ApiError` | `success()`는 데이터를, `fail()`은 오류 코드·메시지를 담아 공통 응답 생성 |
 | `CoffeeGlobalExceptionHandler` | 입력 검증 실패 시 필드별 오류 메시지를 모아 `400`과 `INVALID_INPUT` 반환 |
 | `DefaultGlobalExceptionHandler` | `CustomException`을 공통 실패 응답으로 변환하고 `404` 반환 |
@@ -315,7 +318,7 @@
 
 | 코드 | 실습 내용 |
 | --- | --- |
-| `Student`, `Instructor`, `CategoryD1006`, `Course`, `Enrollment` | 학생·강사·강의·수강 정보 엔티티와 필드 제약, 생성 시 기본값 정의 |
+| `Student`, `Instructor`, `Category`, `Course`, `Enrollment` | 학생·강사·강의·수강 정보 엔티티와 필드 제약, 생성 시 기본값 정의 |
 | `PracticeTest` | `EntityManager`를 주입받아 저장·조회·수정·삭제, `flush()`와 `clear()` 확인 |
 | 엔티티 메서드 | `Course.changePrice()`와 `Enrollment.updateProgress()`로 상태 변경을 엔티티 동작으로 표현 |
 
@@ -445,9 +448,9 @@
 | 코드 | 실습 내용 |
 | --- | --- |
 | `DataInitializer` | 실행 시 분류·회원 5명·도서 10권 기본 데이터 생성 |
-| `BookController`, `BookService` | `/v1/books`에서 도서 등록(`201`)과 분류별 페이지 조회 |
-| `OrderController`, `OrderService` | `/v1/orders`에서 주문 생성(`201`)·단건 및 목록 조회·취소(`204`). 주문 시 재고 차감, 주문 저장, 결제 저장을 한 트랜잭션으로 처리 |
-| `BookRepository` | 분류별 페이지 조회, 제목 검색, 재고 미만 조회와 JPQL 기반 재고 부족 도서 조회 |
+| `Book1006Controller`, `Book1006Service` | `/v1/books`에서 도서 등록(`201`)과 분류별 페이지 조회 |
+| `Order1006Controller`, `Order1006Service` | `/v1/orders`에서 주문 생성(`201`)·단건 및 목록 조회·취소(`204`). 주문 시 재고 차감, 주문 저장, 결제 저장을 한 트랜잭션으로 처리 |
+| `Book1006Repository` | 분류별 페이지 조회, 제목 검색, 재고 미만 조회와 JPQL 기반 재고 부족 도서 조회 |
 | 예외 클래스 | `OutOfStockException`, `BookNotFoundException`, `MemberNotFoundException`, `OrderNotFoundException` |
 
 ### 정리
@@ -479,7 +482,7 @@
 
 | 코드 | 실습 내용 |
 | --- | --- |
-| `TeamD1012`, `MemberD1012` | 팀 1 : 멤버 N 관계 엔티티. 멤버가 외래 키를 가진 연관관계 주인 |
+| `Team1012`, `Member1012` | 팀 1 : 멤버 N 관계 엔티티. 멤버가 외래 키를 가진 연관관계 주인 |
 | `TeamRepositoryD1012` | fetch join 쿼리와 `@EntityGraph` 쿼리 정의 |
 | `NPlusOneTest` | 팀 5개 × 멤버 3명을 저장하고 `flush()`·`clear()`로 캐시를 비운 뒤 쿼리 수 비교 |
 | 테스트별 쿼리 수 | `findAll()`만 호출하면 1번, 멤버 접근 시 1+N번(6번), fetch join·`@EntityGraph`는 1번, 배치 사이즈는 2번 |
@@ -513,12 +516,12 @@
 | 코드 | 실습 내용 |
 | --- | --- |
 | `Member1026Controller`, `Member1026Service` | `/api/members`에서 회원 가입(`201`)과 조회. 이메일 중복 시 `409` |
-| `Product1026Controller`, `Product1026Service` | `/api/products`에서 상품을 메모리에 저장 |
+| `Product1026Controller`, `Product1026Service` | `/api/products`에서 상품 등록. 이후 JPA 저장소로 전환 |
 | `Order1026Controller`, `Order1026Service` | `/api/orders`에서 회원·상품 확인, 재고 차감, 총 주문 금액 계산 |
 | `BannedWordValidator`, `PhoneValidator` | 금지어 포함 여부와 `010-0000-0000` 형식을 정규식으로 검사. null은 통과 |
 | `ErrorResponse` | 에러 코드·메시지와 필드별 오류 목록을 담는 공통 응답 |
 | `ApiExceptionHandler1026` | 업무 예외는 `ErrorCode`의 상태로, 검증 실패는 `400`, 그 외는 `500`으로 응답하고 로그 기록 |
-| 메모리 Repository | `ConcurrentHashMap`과 `AtomicLong`으로 저장소와 ID 생성 |
+| Repository 전환 | 처음에는 `ConcurrentHashMap`과 `AtomicLong`으로 구현하고, 테스트 실습에서 `JpaRepository`와 엔티티 매핑으로 전환 |
 
 ### 정리
 
@@ -558,3 +561,117 @@
 
 - **로그 관리:** 환경에 따라 출력 위치와 레벨을 나누고, 파일은 날짜·크기 기준으로 보관한다.
 - **상태 모니터링:** Actuator로 애플리케이션과 저장소 상태를 확인하고 노출할 엔드포인트를 제한한다.
+
+
+---
+
+<a id="test-basics"></a>
+
+## JUnit·Mockito·JPA Repository 테스트
+
+**실습 패키지:** `src/test/java/.../d1027` → `src/main/java/.../d1026`
+
+### 핵심 개념
+
+| 개념 | 요약 |
+| --- | --- |
+| 테스트 구성 | `@Test`, `@DisplayName`으로 검증할 동작을 표현하고 Given → When → Then으로 준비·실행·검증 구분 |
+| 테스트 준비 | `@BeforeEach`에서 각 테스트에 필요한 객체나 데이터를 새로 준비 |
+| 결과와 예외 검증 | JUnit의 `assertEquals`, `assertThrows`와 AssertJ의 `assertThat`으로 결과·예외·조회 목록 확인 |
+| Mock과 의존성 주입 | `MockitoExtension`, `@Mock`, `@InjectMocks`로 Repository를 대체하고 서비스의 분기와 계산 검증 |
+| 호출 검증과 Spy | `when().thenReturn()`으로 응답을 정하고, `verify()`·`never()`로 호출 여부 확인. `spy()`는 실제 객체의 동작과 호출을 함께 확인 |
+| JPA 테스트 | `@DataJpaTest`로 엔티티와 Repository를 로딩해 쿼리 조건을 검증하고 테스트별 트랜잭션 롤백으로 데이터 분리 |
+
+### 실습 내용
+
+| 코드 | 실습 내용 |
+| --- | --- |
+| `Member1026`, `Product1026` | JPA 엔티티·ID 자동 생성·기본 생성자를 추가하고 기존 메모리 저장소를 `JpaRepository`로 전환 |
+| `ProductTest` | 재고 차감, 재고 부족 예외, 재고와 주문 수량이 같은 경계값 확인. 현재 `@SpringBootTest` 사용 |
+| `Member1026ServiceTest` | 회원 가입 결과와 이메일 중복 예외 검증 |
+| `Order1026ServiceTest` | 정상 주문·여러 품목의 총액, 회원·상품 없음, 재고 부족 예외, 실패 시 다음 저장소 미호출과 Spy의 재고 차감 확인 |
+| `Member1026RepositoryTest` | 저장된 이메일과 없는 이메일의 `existsByEmail()` 결과 비교 |
+| `ProductRepositoryTest` | 재고 이하·상품명 포함·빈 결과·가격 범위 조회 검증. 가격 범위 테스트는 결과 포함 여부를 확인하며 정렬 순서는 별도 검증하지 않음 |
+| `Product1026ServiceTest` | Mock과 서비스 주입 설정까지 작성한 상태이며 테스트 메서드는 아직 없음 |
+
+### 정리
+
+- **검증 대상 분리:** 서비스의 업무 분기는 Mock으로, 실제 쿼리 조건은 JPA 테스트로 확인한다.
+- **실패와 경계값:** 정상 결과뿐 아니라 재고가 딱 맞는 경우와 대상 없음·재고 부족 예외도 테스트로 남긴다.
+
+---
+
+<a id="book-order-testing"></a>
+
+## 도서 주문 도메인·예외 처리·요청 추적
+
+**실습 패키지:** `src/main/java/.../d1027`
+
+### 핵심 개념
+
+| 개념 | 요약 |
+| --- | --- |
+| 도메인 검증 | 요청 DTO의 검증과 별개로 엔티티도 수량과 재고를 검사해 직접 호출되는 경우의 규칙을 보호 |
+| 주문 트랜잭션 | 회원·도서 조회 → 재고 차감 → 주문·결제 저장을 한 트랜잭션에서 수행 |
+| 변경 감지와 취소 | 관리 중인 엔티티의 상태와 재고를 변경하면 별도 `save()` 없이 반영 |
+| 업무 예외 구분 | `BusinessException`과 `ErrorCode`로 대상 없음·재고 부족·잘못된 수량·중복 취소를 구분 |
+| 예외 처리 범위 | `@RestControllerAdvice(basePackages = ...)`로 날짜별 실습의 예외 처리기가 서로 간섭하지 않도록 범위 지정 |
+| 요청 식별자 | 필터에서 요청 ID를 MDC에 넣고 오류 응답에도 담음. 처리 후 `finally`에서 MDC 정리 |
+
+### 실습 내용
+
+| 코드 | 실습 내용 |
+| --- | --- |
+| `Book1027Controller`, `Book1027Service` | `/d1027/v1/books`에서 도서 등록과 분류별 페이지 조회. 없는 분류는 업무 예외로 처리 |
+| `Order1027Controller`, `Order1027Service` | `/d1027/v1/orders`에서 주문 생성·조회·취소. 주문 생성 메서드는 주문 ID 반환 |
+| `Book1027` | 1 미만 수량과 재고 부족을 거부하고 재고 차감·복구 수행 |
+| `Order1027`, `OrderItem1027` | 주문 시점 가격 보존, 품목별 금액 합산, 양방향 관계 설정, 취소 시 재고 복구와 중복 취소 차단 |
+| `Member1027` | GOLD 등급으로 변경하고 `earnPoint()` 호출 시 주문 금액의 10% 적립. 주문 서비스에는 아직 연결하지 않음 |
+| `ApiExceptionHandler1027`, `Error1027Response` | 업무 예외·필드 검증 실패·예상하지 못한 예외를 코드·메시지·필드 오류·요청 ID로 변환 |
+| `RequestIdFilter` | 요청마다 짧은 UUID를 MDC의 `requestId`에 저장하고 처리 종료 시 정리 |
+
+### 정리
+
+- **규칙의 위치:** 재고·취소 규칙은 도메인에서 지키고, 서비스는 저장소 호출과 트랜잭션 흐름을 조합한다.
+- **오류 추적:** 오류 응답에 요청 ID를 담아 해당 요청의 처리 흐름을 찾을 기준을 마련한다.
+
+---
+
+<a id="layer-tests"></a>
+
+## 도메인·Repository·Service·Controller 테스트
+
+**실습 패키지:** `src/test/java/.../d1028` → `src/main/java/.../d1027`
+
+### 핵심 개념
+
+| 개념 | 요약 |
+| --- | --- |
+| 도메인 테스트 | 객체의 상태 변화·계산·예외 조건을 확인. Spring이 필요 없는 규칙은 객체를 직접 생성해 검증 가능 |
+| Repository 테스트 | `@DataJpaTest`로 조회 조건·정렬·DB 제약 확인. `saveAndFlush()`로 SQL을 실행시켜 제약 위반 확인 |
+| 서비스 단위 테스트 | Mockito로 저장소를 대체하고 업무 분기·재고 변화·주문 및 결제 저장 호출 검증 |
+| 서비스 통합 테스트 | `@SpringBootTest`로 실제 서비스와 저장소를 연결해 DB 반영을 확인. Mock 테스트로는 실제 트랜잭션 롤백을 검증할 수 없음 |
+| MVC 테스트 | `@WebMvcTest`와 `MockMvc`로 요청 경로·상태 코드·JSON·입력 검증 확인. `@MockitoBean`으로 서비스 대체 |
+| 검증문과 테스트 이름 | 테스트 이름에 적은 의도가 실제 assertion으로 확인되는지 점검해야 함 |
+
+### 실습 내용
+
+| 코드 | 실습 내용 |
+| --- | --- |
+| `domain/BookTest` | 재고 차감·경계값·재고 부족·음수 수량 거부와 주문 취소 후 재고 복구 확인. 현재 Spring 통합 테스트가 함께 포함됨 |
+| `domain/MemberTest` | GOLD 회원의 50,000원 주문에 대한 5,000포인트 적립 확인 |
+| `repository/MemberRepositoryTest` | 같은 이메일을 `saveAndFlush()`로 저장해 DB의 unique 제약 위반 확인 |
+| `repository/BookRepositoryTest` | 분류·재고 조건에 맞는 도서 수와 가격 내림차순 결과 확인 |
+| `service/OrderServiceTest` | 정상 주문의 재고 차감·주문 및 결제 저장, 회원 없음·재고 부족, 취소 상태와 재고 복구 검증 |
+| `service/OrderServiceIntergrationTest` | 실제 주문·취소 후 DB에서 재고 재조회. `@AfterEach`에서 결제 → 주문 → 회원·도서 순으로 데이터 정리 |
+| `controller/BookControllerTest` | 도서 등록 `201`과 ID, 빈 제목·저자의 `400` 및 필드별 오류, 쿼리 파라미터를 포함한 조회 요청 확인 |
+| `controller/OrderControllerTest` | 없는 주문의 `404`·`ORDER_NOT_FOUND`, 단건 조회 `200`, 취소 `204`와 요청·응답 출력 확인 |
+
+현재 `OrderTest`의 총액 테스트에는 검증문이 없고, `OrderServiceTest`의 여러 품목 총액 테스트는 주문 ID 반환값을 금액과 비교하고 있어 보완이 필요하다. 통합 테스트의 롤백 시나리오도 현재 예외와 도서 제목만 확인하므로, 재고 복원과 주문·결제 미저장까지 검증한 상태는 아니다.
+
+### 정리
+
+- **계층별 책임:** 도메인은 규칙, Repository는 쿼리와 제약, Service는 업무 흐름, Controller는 HTTP 계약을 확인한다.
+- **검증 범위:** 테스트가 실행되는 것과 의도한 동작을 충분히 검증하는 것은 구분한다. 특히 롤백은 실제 DB 상태로 확인한다.
+
+**관련 학습 문서:** [테스트 입문](test-code-beginner.md) · [계층별 테스트 가이드](test-code-guide.md) · [TDD 입문](test-code-tdd-intro.md)

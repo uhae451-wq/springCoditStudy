@@ -46,12 +46,12 @@ public class OrderD1006 {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id", nullable = false)
-  private MemberD1006 member;
+  private Member1006 member;
 
   @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItemD1006> orderItems = new ArrayList<>();
 
-  public static OrderD1006 create(MemberD1006 member) {
+  public static OrderD1006 create(Member1006 member) {
     OrderD1006 order = new OrderD1006();
     order.member = member;
     order.orderedAt = LocalDateTime.now();

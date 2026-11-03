@@ -13,6 +13,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class Order1026Service {
   private final Member1026Repository memberRepository;
   private final Product1026Repository productRepository;
 
+  @Transactional
   public String order(Long memberId, List<OrderLineRequest> lines) {
 
     log.info("주문 요청 멤버ID = {},  품목수 = {} ",memberId,lines.size());

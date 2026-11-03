@@ -1,26 +1,31 @@
 package com.example.springcoditstudy.d1026.repository;
 
 import com.example.springcoditstudy.d1026.domain.Product1026;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class Product1026Repository {
-  private final Map<Long, Product1026> store = new ConcurrentHashMap<>();
-  private final AtomicLong sequence = new AtomicLong();
+public interface Product1026Repository extends JpaRepository<Product1026,Long> {
 
-  public Product1026 save(String name, int price, int stock) {
-    Long id = sequence.incrementAndGet();
-    Product1026 Product1026 = new Product1026(id, name, price, stock);
-    store.put(id, Product1026);
-    return Product1026;
+  default Product1026 save(String name, int price, int stock){
+    return save(new Product1026(name,price,stock));
   }
 
-  public Optional<Product1026> findById(Long id) {
-    return Optional.ofNullable(store.get(id));
-  }
+  // 재고가 몇개 이하인 제품 가져오기
+  List<Product1026> findByStockLessThanEqual(int quantity);
+
+  // 특정 단어가 들어간 제품 가져오기
+  List<Product1026> findByNameContaining(String name);
+
+  // 직접 작성한 쿼리 ( 가격범위 , 싼 순서대로 )
+  @Query("select p from Product1026 p where p.price between :min and :max order by p.price")
+  List<Product1026> findInPriceRange(@Param("min") int min, @Param("max") int max);
 
 }

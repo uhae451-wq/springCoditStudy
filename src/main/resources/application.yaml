@@ -15,7 +15,7 @@ spring:
       ## update : 바뀐 부분만 alter (삭제는 안함)
       ## validate : 엔티티와 테이블이 맞는지 확인함
       ## none : 아무것도 안함
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true

@@ -31,13 +31,13 @@ public class OrderItemD1006 {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "book_id", nullable = false)
-  private BookD1006 book;
+  private Book1006 book;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id", nullable = false)
   private OrderD1006 order;
 
-  public OrderItemD1006(BookD1006 book,int quantity){
+  public OrderItemD1006(Book1006 book,int quantity){
     this.book = book;
     this.quantity = quantity;
     this.orderPrice = book.getPrice();

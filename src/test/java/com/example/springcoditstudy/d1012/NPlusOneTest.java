@@ -2,8 +2,8 @@ package com.example.springcoditstudy.d1012;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.springcoditstudy.d1012.entity.MemberD1012;
-import com.example.springcoditstudy.d1012.entity.TeamD1012;
+import com.example.springcoditstudy.d1012.entity.Member1012;
+import com.example.springcoditstudy.d1012.entity.Team1012;
 import com.example.springcoditstudy.d1012.repository.TeamRepositoryD1012;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -38,10 +38,10 @@ class NPlusOneTest {
   void setUp() {
     // 팀 5개 x 멤버 3명
     for (int i = 1; i <= TEAM_COUNT; i++) {
-      TeamD1012 team = new TeamD1012("팀" + i);
+      Team1012 team = new Team1012("팀" + i);
       em.persist(team);
       for (int j = 1; j <= MEMBER_PER_TEAM; j++) {
-        em.persist(new MemberD1012("팀" + i + "-멤버" + j, team));
+        em.persist(new Member1012("팀" + i + "-멤버" + j, team));
       }
     }
 
@@ -62,7 +62,7 @@ class NPlusOneTest {
 
   @Test
   void findAll만_하면_쿼리_1번() {
-    List<TeamD1012> teams = teamRepository.findAll();
+    List<Team1012> teams = teamRepository.findAll();
     System.out.println("팀 수 : " + teams.size());
 
     // members 는 건드리지 않았으므로 LAZY 프록시 상태 그대로 -> 팀 조회 쿼리 1번뿐
@@ -72,9 +72,9 @@ class NPlusOneTest {
 
   @Test
   void N_plus_1_발생() {
-    List<TeamD1012> teams = teamRepository.findAll();            // 팀 조회 1번
+    List<Team1012> teams = teamRepository.findAll();            // 팀 조회 1번
 
-    for (TeamD1012 team : teams) {
+    for (Team1012 team : teams) {
       System.out.println(team.getName() + " 멤버 수 : " + team.getMembers().size());  // 팀마다 쿼리 1번씩
     }
 
@@ -84,9 +84,9 @@ class NPlusOneTest {
 
   @Test
   void fetch_join으로_해결() {
-    List<TeamD1012> teams = teamRepository.findAllWithMembers();
+    List<Team1012> teams = teamRepository.findAllWithMembers();
 
-    for (TeamD1012 team : teams) {
+    for (Team1012 team : teams) {
       System.out.println(team.getName() + " 멤버 수 : " + team.getMembers().size());
     }
 
@@ -96,9 +96,9 @@ class NPlusOneTest {
 
   @Test
   void entityGraph로_해결() {
-    List<TeamD1012> teams = teamRepository.findAllWithMembersByGraph();
+    List<Team1012> teams = teamRepository.findAllWithMembersByGraph();
 
-    for (TeamD1012 team : teams) {
+    for (Team1012 team : teams) {
       System.out.println(team.getName() + " 멤버 수 : " + team.getMembers().size());
     }
 
@@ -112,9 +112,9 @@ class NPlusOneTest {
     // 이 테스트에서만 세션에 직접 적용한다.
     em.unwrap(Session.class).setFetchBatchSize(100);
 
-    List<TeamD1012> teams = teamRepository.findAll();            // 팀 조회 1번
+    List<Team1012> teams = teamRepository.findAll();            // 팀 조회 1번
 
-    for (TeamD1012 team : teams) {
+    for (Team1012 team : teams) {
       System.out.println(team.getName() + " 멤버 수 : " + team.getMembers().size());
     }
 

@@ -5,7 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice
+@ControllerAdvice(basePackages = "com.example.springcoditstudy.d0909")
 public class ExceptionController {
 
     @ExceptionHandler(ImageUploadException.class)

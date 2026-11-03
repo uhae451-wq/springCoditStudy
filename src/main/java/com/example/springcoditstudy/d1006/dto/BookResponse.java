@@ -1,6 +1,6 @@
 package com.example.springcoditstudy.d1006.dto;
 
-import com.example.springcoditstudy.d1006.entity.BookD1006;
+import com.example.springcoditstudy.d1006.entity.Book1006;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,7 +13,7 @@ public class BookResponse {
   private int price;
   private int stock;
 
-  public static BookResponse from(BookD1006 book) {
+  public static BookResponse from(Book1006 book) {
     return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(),book.getPrice(), book.getStock());
   }
 

@@ -19,7 +19,7 @@ public class MemberHealthIndicator implements HealthIndicator {
   @Override
   public Health health() {
     try {
-      int count = member1026Repository.count();
+      long count = member1026Repository.count();
       return Health.up()
           .withDetail("memberCount", count)
           .withDetail("storage", "in-memory")
